@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glass Heating Typography Effects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255,107,107,0.8) 0%, rgba(255,165,0,0.4) 50%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: screen;
+            transition: transform 0.1s ease-out;
+        }
+
+        .cursor.heating {
+            transform: scale(2);
+            background: radial-gradient(circle, rgba(255,69,0,1) 0%, rgba(255,140,0,0.8) 30%, rgba(255,215,0,0.4) 60%, transparent 80%);
+        }
+
+        /* Glass Container */
+        .glass-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 2rem;
+            padding: 3rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+                rgba(255, 107, 107, 0.1) 0%, 
+                rgba(255, 165, 0, 0.05) 20%, 
+                transparent 40%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .glass-container.heating::before {
+            opacity: 1;
+        }
+
+        .glass-container.heating {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 107, 107, 0.3);
+            box-shadow: 
+                0 8px 32px rgba(255, 107, 107, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        /* Typography Styles */
+        .hero-title {
+            font-size: clamp(2rem, 8vw, 6rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-title::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 50%, #ffd700 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            clip-path: circle(0% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+            transition: clip-path 0.5s ease;
+            z-index: 1;
+        }
+
+        .hero-title.revealing::before {
+            clip-path: circle(100% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Interactive Text */
+        .interactive-text {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            margin: 2rem 0;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .interactive-word {
+            display: inline-block;
+            position: relative;
+            padding: 0.2em 0.1em;
+            margin: 0.1em;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .interactive-word:hover {
+            background: rgba(255, 107, 107, 0.1);
+            transform: scale(1.05);
+            color: #fff;
+        }
+
+        .interactive-word.heated {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%);
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Heat Ripple Effect */
+        .heat-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,107,107,0.3) 0%, rgba(255,165,0,0.2) 50%, transparent 70%);
+            pointer-events: none;
+            animation: ripple 1s ease-out forwards;
+        }
+
+        @keyframes ripple {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translateY(-100px) scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Heat Bars */
+        .heat-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1000;
+        }
+
+        .heat-bar {
+            width: 4px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .heat-bar.active {
+            background: linear-gradient(to top, #ff6b6b, #ffa500, #ffd700);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin: 3rem 0;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 107, 107, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .glass-container {
+                margin: 1rem;
+                padding: 2rem;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor" id="cursor"></div>
+    
+    <div class="heat-indicator">
+        <div class="heat-bar"></div>
+        <div class="heat-bar"></div>
+        <div class="heat-bar"></div>
+        <div class="heat-bar"></div>
+        <div class="heat-bar"></div>
+    </div>
+
+    <div class="glass-container" id="glassContainer">
+        <h1 class="hero-title" data-text="Glass Heating Typography">
+            Glass Heating Typography
+        </h1>
+        
+        <p class="subtitle">
+            Move your cursor to experience interactive heat effects and typography reveals
+        </p>
+
+        <div class="interactive-text">
+            <span class="interactive-word">Hover</span>
+            <span class="interactive-word">over</span>
+            <span class="interactive-word">these</span>
+            <span class="interactive-word">words</span>
+            <span class="interactive-word">to</span>
+            <span class="interactive-word">see</span>
+            <span class="interactive-word">the</span>
+            <span class="interactive-word">heating</span>
+            <span class="interactive-word">effect</span>
+            <span class="interactive-word">in</span>
+            <span class="interactive-word">action</span>
+        </div>
+
+        <div class="content-section">
+            <h2 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; font-size: 2rem;">
+                Interactive Demonstrations
+            </h2>
+            
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3 style="color: #ffd700; margin-bottom: 1rem;">Mouse Tracking</h3>
+                    <p style="color: rgba(255, 255, 255, 0.7);">
+                        The glass surface responds to your mouse position with dynamic heating effects
+                        that follow your cursor around the screen.
+                    </p>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 style="color: #ffd700; margin-bottom: 1rem;">Typography Reveal</h3>
+                    <p style="color: rgba(255, 255, 255, 0.7);">
+                        Text transforms with heated gradients that reveal themselves through
+                        circular clip-path animations.
+                    </p>
+                </div>
+                
+                <div class="demo-card">
+                    <h3 style="color: #ffd700; margin-bottom: 1rem;">Heat Intensity</h3>
+                    <p style="color: rgba(255, 255, 255, 0.7);">
+                        Visual feedback through color intensity, particle effects, and
+                        temperature-based styling changes.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <div class="interactive-text">
+                <span class="interactive-word">Click</span>
+                <span class="interactive-word">anywhere</span>
+                <span class="interactive-word">to</span>
+                <span class="interactive-word">create</span>
+                <span class="interactive-word">heat</span>
+                <span class="interactive-word">ripples</span>
+                <span class="interactive-word">and</span>
+                <span class="interactive-word">floating</span>
+                <span class="interactive-word">particles</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cursor tracking and heating system
+        const cursor = document.getElementById('cursor');
+        const glassContainer = document.getElementById('glassContainer');
+        const heroTitle = document.querySelector('.hero-title');
+        const interactiveWords = document.querySelectorAll('.interactive-word');
+        const heatBars = document.querySelectorAll('.heat-bar');
+        
+        let mouseX = 0;
+        let mouseY = 0;
+        let isHeating = false;
+        let heatLevel = 0;
+
+        // Update cursor position and heat effects
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Update cursor position
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+            
+            // Calculate heat based on movement speed
+            const rect = glassContainer.getBoundingClientRect();
+            const isOverGlass = (
+                mouseX >= rect.left && mouseX <= rect.right &&
+                mouseY >= rect.top && mouseY <= rect.bottom
+            );
+            
+            if (isOverGlass) {
+                // Calculate relative position for glass heating effect
+                const relativeX = ((mouseX - rect.left) / rect.width * 100);
+                const relativeY = ((mouseY - rect.top) / rect.height * 100);
+                
+                glassContainer.style.setProperty('--mouse-x', relativeX + '%');
+                glassContainer.style.setProperty('--mouse-y', relativeY + '%');
+                
+                // Typography reveal effect
+                heroTitle.style.setProperty('--reveal-x', relativeX + '%');
+                heroTitle.style.setProperty('--reveal-y', relativeY + '%');
+                heroTitle.classList.add('revealing');
+                
+                // Activate heating
+                if (!isHeating) {
+                    isHeating = true;
+                    cursor.classList.add('heating');
+                    glassContainer.classList.add('heating');
+                    increaseHeat();
+                }
+            } else {
+                isHeating = false;
+                cursor.classList.remove('heating');
+                glassContainer.classList.remove('heating');
+                heroTitle.classList.remove('revealing');
+                decreaseHeat();
+            }
+        });
+
+        // Heat level management
+        function increaseHeat() {
+            if (isHeating && heatLevel < 5) {
+                heatLevel++;
+                updateHeatBars();
+                setTimeout(increaseHeat, 200);
+            }
+        }
+
+        function decreaseHeat() {
+            if (!isHeating && heatLevel > 0) {
+                heatLevel--;
+                updateHeatBars();
+                setTimeout(decreaseHeat, 300);
+            }
+        }
+
+        function updateHeatBars() {
+            heatBars.forEach((bar, index) => {
+                if (index < heatLevel) {
+                    bar.classList.add('active');
+                } else {
+                    bar.classList.remove('active');
+                }
+            });
+        }
+
+        // Interactive word heating
+        interactiveWords.forEach(word => {
+            word.addEventListener('mouseenter', () => {
+                word.classList.add('heated');
+                createParticles(word);
+            });
+            
+            word.addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    word.classList.remove('heated');
+                }, 500);
+            });
+        });
+
+        // Click to create ripples
+        document.addEventListener('click', (e) => {
+            createRipple(e.clientX, e.clientY);
+            createParticles(e.target);
+        });
+
+        // Create heat ripple effect
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'heat-ripple';
+            ripple.style.left = (x - 25) + 'px';
+            ripple.style.top = (y - 25) + 'px';
+            ripple.style.width = '50px';
+            ripple.style.height = '50px';
+            
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 1000);
+        }
+
+        // Create floating particles
+        function createParticles(element) {
+            const rect = element.getBoundingClientRect();
+            const particleCount = 3 + Math.random() * 3;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const startX = rect.left + Math.random() * rect.width;
+                const startY = rect.top + Math.random() * rect.height;
+                
+                particle.style.left = startX + 'px';
+                particle.style.top = startY + 'px';
+                particle.style.animationDelay = (Math.random() * 0.5) + 's';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 3000);
+            }
+        }
+
+        // Scroll reveal animation
+        function revealOnScroll() {
+            const sections = document.querySelectorAll('.content-section');
+            
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight * 0.8) {
+                    section.classList.add('visible');
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('scroll', revealOnScroll);
+        revealOnScroll(); // Check initial state
+
+        // Hide default cursor on glass container
+        glassContainer.addEventListener('mouseenter', () => {
+            document.body.style.cursor = 'none';
+        });
+        
+        glassContainer.addEventListener('mouseleave', () => {
+            document.body.style.cursor = 'default';
+        });
+
+        // Performance optimization - throttle mouse events
+        let ticking = false;
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    // Mouse tracking code here is already handled above
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Add subtle background animation
+        function animateBackground() {
+            const time = Date.now() * 0.001;
+            const gradient = `linear-gradient(${135 + Math.sin(time) * 10}deg, 
+                #0f0f23 0%, 
+                #1a1a2e ${50 + Math.cos(time * 0.7) * 5}%, 
+                #16213e 100%)`;
+            document.body.style.background = gradient;
+            requestAnimationFrame(animateBackground);
+        }
+        
+        animateBackground();
+
+        console.log('Glass Heating Typography System Initialized');
+        console.log('- Mouse tracking: Active');
+        console.log('- Heat effects: Ready');
+        console.log('- Typography reveals: Enabled');
+        console.log('- Interactive elements: Loaded');
+    </script>
+</body>
+</html>

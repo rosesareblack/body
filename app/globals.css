@@ -1,0 +1,216 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Glass heating effect custom properties */
+  --glass-opacity-base: 0.1;
+  --glass-opacity-semi: 0.3;
+  --glass-opacity-heated: 0.7;
+  --glass-opacity-extreme: 0.9;
+  
+  /* Blur intensity levels */
+  --glass-blur-none: 0px;
+  --glass-blur-light: 4px;
+  --glass-blur-medium: 8px;
+  --glass-blur-heavy: 16px;
+  --glass-blur-intense: 24px;
+  
+  /* Temperature-based transformations */
+  --glass-scale-cool: 1;
+  --glass-scale-warm: 1.02;
+  --glass-scale-hot: 1.05;
+  --glass-scale-extreme: 1.08;
+  
+  /* Transition durations */
+  --glass-transition-fast: 0.3s;
+  --glass-transition-medium: 0.6s;
+  --glass-transition-slow: 1.2s;
+  --glass-transition-ultra-slow: 2.0s;
+  
+  /* Glass surface properties */
+  --glass-surface-brightness: 1;
+  --glass-surface-contrast: 1;
+  --glass-surface-saturate: 1;
+  
+  /* Heated state surface modifications */
+  --glass-heated-brightness: 0.9;
+  --glass-heated-contrast: 1.1;
+  --glass-heated-saturate: 0.8;
+  
+  /* Glass border properties */
+  --glass-border-opacity: 0.2;
+  --glass-border-heated-opacity: 0.4;
+  
+  /* Shimmer effect properties */
+  --glass-shimmer-size: 200%;
+  --glass-shimmer-angle: 45deg;
+  --glass-shimmer-opacity: 0.3;
+}
+
+/* Base glass component styles */
+@layer components {
+  .glass-base {
+    @apply relative overflow-hidden;
+    backdrop-filter: blur(var(--glass-blur-light));
+    border: 1px solid rgba(255, 255, 255, var(--glass-border-opacity));
+    transition: all var(--glass-transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-transparent {
+    background: rgba(0, 0, 0, var(--glass-opacity-base));
+    backdrop-filter: blur(var(--glass-blur-light));
+    transform: scale(var(--glass-scale-cool));
+  }
+  
+  .glass-semi-transparent {
+    background: rgba(0, 0, 0, var(--glass-opacity-semi));
+    backdrop-filter: blur(var(--glass-blur-medium));
+    transform: scale(var(--glass-scale-warm));
+    border-color: rgba(255, 255, 255, var(--glass-border-opacity));
+  }
+  
+  .glass-heated {
+    background: rgba(75, 75, 75, var(--glass-opacity-heated));
+    backdrop-filter: 
+      blur(var(--glass-blur-heavy))
+      brightness(var(--glass-heated-brightness))
+      contrast(var(--glass-heated-contrast))
+      saturate(var(--glass-heated-saturate));
+    transform: scale(var(--glass-scale-hot));
+    border-color: rgba(255, 255, 255, var(--glass-border-heated-opacity));
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-heated-extreme {
+    background: rgba(105, 105, 105, var(--glass-opacity-extreme));
+    backdrop-filter: 
+      blur(var(--glass-blur-intense))
+      brightness(var(--glass-heated-brightness))
+      contrast(var(--glass-heated-contrast))
+      saturate(var(--glass-heated-saturate));
+    transform: scale(var(--glass-scale-extreme));
+    border-color: rgba(255, 255, 255, var(--glass-border-heated-opacity));
+    box-shadow: 
+      0 12px 48px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Shimmer effect for glass heating */
+  .glass-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass-shimmer::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: var(--glass-shimmer-size);
+    height: var(--glass-shimmer-size);
+    background: linear-gradient(
+      var(--glass-shimmer-angle),
+      transparent 0%,
+      rgba(255, 255, 255, var(--glass-shimmer-opacity)) 50%,
+      transparent 100%
+    );
+    transform: rotate(var(--glass-shimmer-angle));
+    animation: glassShimmer 2s linear infinite;
+  }
+  
+  /* Interactive heating states */
+  .glass-interactive {
+    cursor: pointer;
+    transition: all var(--glass-transition-medium) ease-out;
+  }
+  
+  .glass-interactive:hover {
+    transform: scale(1.02);
+    backdrop-filter: blur(calc(var(--glass-blur-medium) + 2px));
+  }
+  
+  .glass-interactive:active {
+    transform: scale(0.98);
+    backdrop-filter: blur(var(--glass-blur-heavy));
+  }
+  
+  /* Temperature transition utilities */
+  .glass-heating {
+    animation: glassHeatUp var(--glass-transition-slow) ease-in-out forwards;
+  }
+  
+  .glass-cooling {
+    animation: glassCoolDown var(--glass-transition-ultra-slow) ease-out forwards;
+  }
+  
+  .glass-pulse-heating {
+    animation: glassPulseHeat 1.5s ease-in-out infinite;
+  }
+  
+  /* Surface texture effects */
+  .glass-textured::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  /* Responsive glass effects */
+  @media (prefers-reduced-motion: reduce) {
+    .glass-base,
+    .glass-interactive,
+    .glass-heating,
+    .glass-cooling {
+      animation: none;
+      transition: none;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .glass-base {
+      backdrop-filter: blur(calc(var(--glass-blur-light) / 2));
+    }
+    
+    .glass-heated {
+      backdrop-filter: blur(calc(var(--glass-blur-medium) / 1.5));
+    }
+  }
+}
+
+/* Utility classes for dynamic glass states */
+@layer utilities {
+  .glass-opacity-0 { --glass-opacity-base: 0; }
+  .glass-opacity-10 { --glass-opacity-base: 0.1; }
+  .glass-opacity-20 { --glass-opacity-base: 0.2; }
+  .glass-opacity-30 { --glass-opacity-base: 0.3; }
+  .glass-opacity-40 { --glass-opacity-base: 0.4; }
+  .glass-opacity-50 { --glass-opacity-base: 0.5; }
+  .glass-opacity-60 { --glass-opacity-base: 0.6; }
+  .glass-opacity-70 { --glass-opacity-base: 0.7; }
+  .glass-opacity-80 { --glass-opacity-base: 0.8; }
+  .glass-opacity-90 { --glass-opacity-base: 0.9; }
+  .glass-opacity-100 { --glass-opacity-base: 1; }
+  
+  .glass-blur-none { --glass-blur-light: 0px; }
+  .glass-blur-xs { --glass-blur-light: 2px; }
+  .glass-blur-sm { --glass-blur-light: 4px; }
+  .glass-blur-md { --glass-blur-light: 8px; }
+  .glass-blur-lg { --glass-blur-light: 16px; }
+  .glass-blur-xl { --glass-blur-light: 24px; }
+  
+  .glass-scale-95 { --glass-scale-cool: 0.95; }
+  .glass-scale-100 { --glass-scale-cool: 1; }
+  .glass-scale-102 { --glass-scale-cool: 1.02; }
+  .glass-scale-105 { --glass-scale-cool: 1.05; }
+  .glass-scale-110 { --glass-scale-cool: 1.1; }
+}
